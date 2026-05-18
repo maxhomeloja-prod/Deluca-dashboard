@@ -107,50 +107,52 @@
 
   /* MOBILE */
   @media(max-width:640px){
-    .container{padding:12px;}
-    .header{padding:14px 16px;}
+    /* Base: garantir que nada vaze da tela */
+    *{max-width:100%;}
+    .container{padding:10px;}
+    .header{padding:12px 16px;}
 
-    /* Filtros: empilhar verticalmente, cada campo ocupa linha inteira */
-    .filters{flex-direction:column;gap:10px;padding:14px;}
+    /* Filtros: empilhar, sem largura forçada */
+    .filters{flex-direction:column;gap:8px;padding:12px;}
     .filter-group{width:100%;}
-    .filter-control{width:100%;}
-    .btn-apply,.btn-secondary{width:100%;text-align:center;}
+    .filter-control{width:100%;box-sizing:border-box;}
+    .btn-apply,.btn-secondary{width:100%;box-sizing:border-box;}
 
-    /* KPIs: 2 colunas em mobile */
-    .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
-    .kpi-value{font-size:20px;}
-    .kpi-card{padding:14px;}
+    /* KPIs: 2 colunas compactas */
+    .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+    .kpi-value{font-size:18px;}
+    .kpi-card{padding:12px 14px;}
+    .kpi-sub{font-size:10px;}
 
-    /* Tabs: scroll horizontal, não quebra */
-    .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+    /* Tabs: scroll horizontal sem quebra */
+    .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
     .tabs::-webkit-scrollbar{display:none;}
-    .tab{white-space:nowrap;padding:10px 14px;font-size:12px;}
+    .tab{white-space:nowrap;flex-shrink:0;padding:9px 13px;font-size:12px;}
 
-    /* Tabelas: scroll horizontal em vez de quebrar layout */
-    .table-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-    .abc-table,.verba-table{min-width:560px;}
-    .abc-table td,
-    .abc-table th{padding:7px 8px;font-size:11px;}
-    .verba-table td,
-    .verba-table th{padding:7px 8px;font-size:11px;}
-    /* Ocultar coluna de participação (barra) no mobile — ocupa espaço sem valor */
-    .abc-table th:last-child,
-    .abc-table td:last-child{display:none;}
+    /* Tabelas: o wrapper faz scroll horizontal, tabela tem largura mínima suficiente */
+    .table-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+    .abc-table{min-width:500px;width:max-content;}
+    .verba-table{min-width:400px;width:max-content;}
+    .abc-table td,.abc-table th{padding:6px 8px;font-size:11px;}
+    .verba-table td,.verba-table th{padding:6px 8px;font-size:11px;}
+    .abc-table th:last-child,.abc-table td:last-child{display:none;}
 
-    /* Por Conta: ranking compacto */
-    .conta-name{width:110px;font-size:12px;}
-    .conta-val{font-size:12px;width:90px;}
+    /* Por Conta: compactar sem quebrar */
+    .conta-row{gap:8px;}
+    .conta-name{width:90px;font-size:11px;}
+    .conta-val{font-size:11px;width:80px;}
     .conta-qty{display:none;}
 
-    /* Verba: boxes MO em coluna, sem largura fixa */
-    .verba-grid{grid-template-columns:1fr;}
+    /* Verba: coluna lateral de MO vai para baixo */
+    .verba-grid{grid-template-columns:1fr;gap:16px;}
 
-    /* Cards chart: altura reduzida */
-    .chart-wrap{height:220px;}
-    .chart-wrap-lg{height:260px;}
+    /* Gráficos menores */
+    .chart-wrap{height:200px;}
+    .chart-wrap-lg{height:240px;}
 
-    /* Login box menor */
-    .login-box{padding:32px 24px;margin:16px;}
+    /* Login */
+    .login-box{padding:28px 20px;margin:12px;}
+    .login-logo{font-size:18px;}
   }
 
   /* LOGIN */
@@ -262,7 +264,7 @@
     </div>
     <div class="filter-group">
       <span class="filter-label">SKU</span>
-      <input type="text" id="f-sku" class="filter-control" placeholder="ex: LENÇOL_CASAL..." style="width:200px">
+      <input type="text" id="f-sku" class="filter-control" placeholder="ex: LENÇOL_CASAL..." >
     </div>
     <button class="btn-apply" onclick="aplicarFiltros()">↻ ATUALIZAR</button>
     <button class="btn-secondary" onclick="resetarFiltros()">Limpar</button>
