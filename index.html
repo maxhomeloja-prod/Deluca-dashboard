@@ -105,6 +105,54 @@
     .container{padding:16px;}
   }
 
+  /* MOBILE */
+  @media(max-width:640px){
+    .container{padding:12px;}
+    .header{padding:14px 16px;}
+
+    /* Filtros: empilhar verticalmente, cada campo ocupa linha inteira */
+    .filters{flex-direction:column;gap:10px;padding:14px;}
+    .filter-group{width:100%;}
+    .filter-control{width:100%;}
+    .btn-apply,.btn-secondary{width:100%;text-align:center;}
+
+    /* KPIs: 2 colunas em mobile */
+    .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .kpi-value{font-size:20px;}
+    .kpi-card{padding:14px;}
+
+    /* Tabs: scroll horizontal, não quebra */
+    .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{white-space:nowrap;padding:10px 14px;font-size:12px;}
+
+    /* Tabelas: scroll horizontal em vez de quebrar layout */
+    .table-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    .abc-table,.verba-table{min-width:560px;}
+    .abc-table td,
+    .abc-table th{padding:7px 8px;font-size:11px;}
+    .verba-table td,
+    .verba-table th{padding:7px 8px;font-size:11px;}
+    /* Ocultar coluna de participação (barra) no mobile — ocupa espaço sem valor */
+    .abc-table th:last-child,
+    .abc-table td:last-child{display:none;}
+
+    /* Por Conta: ranking compacto */
+    .conta-name{width:110px;font-size:12px;}
+    .conta-val{font-size:12px;width:90px;}
+    .conta-qty{display:none;}
+
+    /* Verba: boxes MO em coluna, sem largura fixa */
+    .verba-grid{grid-template-columns:1fr;}
+
+    /* Cards chart: altura reduzida */
+    .chart-wrap{height:220px;}
+    .chart-wrap-lg{height:260px;}
+
+    /* Login box menor */
+    .login-box{padding:32px 24px;margin:16px;}
+  }
+
   /* LOGIN */
   .login-overlay {
     position:fixed;inset:0;background:var(--bg);z-index:9999;
