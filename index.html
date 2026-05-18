@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeLuca Enxovais — Análise de Vendas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a38;
+    --accent: #e8c547;
+    --accent2: #5b8af5;
+    --accent3: #f5605b;
+    --accent4: #4ecdc4;
+    --text: #f0f0f5;
+    --text2: #8888aa;
+    --text3: #555570;
+    --A: #4ecdc4;
+    --B: #e8c547;
+    --C: #f5605b;
+    --radius: 12px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--A);
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .last-update { color: var(--text2); font-size: 11px; }
+
+  /* LAYOUT */
+  .container { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
+
+  /* FILTERS BAR */
+  .filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    align-items: flex-end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
+  .filter-control {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color .2s;
+    cursor: pointer;
+  }
+  .filter-control:focus { border-color: var(--accent); }
+  .filter-control option { background: var(--surface2); }
+  .btn-apply {
+    padding: 8px 20px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    letter-spacing: 0.5px;
+    align-self: flex-end;
+  }
+  .btn-apply:hover { opacity: 0.85; }
+  .btn-apply:active { transform: scale(0.97); }
+  .btn-secondary {
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+    align-self: flex-end;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .kpi-card:hover { border-color: var(--accent); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+  }
+  .kpi-card:nth-child(2)::before { background: var(--accent2); }
+  .kpi-card:nth-child(3)::before { background: var(--accent4); }
+  .kpi-card:nth-child(4)::before { background: var(--accent3); }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 8px; }
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .2s;
+    letter-spacing: 0.3px;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .card-subtitle { font-size: 11px; color: var(--text3); margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 280px; }
+  .chart-wrap-sm { position: relative; height: 220px; }
+  .chart-wrap-lg { position: relative; height: 360px; }
+
+  /* CURVA ABC */
+  .abc-table { width: 100%; border-collapse: collapse; }
+  .abc-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text3); padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .abc-table td {
+    padding: 8px 12px; font-size: 12px; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .abc-table tr:last-child td { border-bottom: none; }
+  .abc-table tr:hover td { background: var(--surface2); }
+  .abc-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px;
+  }
+  .abc-A { background: rgba(78,205,196,.15); color: var(--A); }
+  .abc-B { background: rgba(232,197,71,.15); color: var(--B); }
+  .abc-C { background: rgba(245,96,91,.15); color: var(--C); }
+  .progress-bar {
+    height: 4px; background: var(--border); border-radius: 2px;
+    overflow: hidden; width: 80px; display: inline-block; vertical-align: middle;
+  }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+  .table-wrap { max-height: 420px; overflow-y: auto; }
+  .table-wrap::-webkit-scrollbar { width: 4px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--border); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  /* CONSUMO MP */
+  .mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .mp-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+  }
+  .mp-name { font-size: 11px; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mp-qty {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px; color: var(--text);
+  }
+  .mp-unit { font-size: 11px; color: var(--text3); }
+  .mp-custo { font-size: 12px; color: var(--accent); margin-top: 4px; }
+
+  /* LOADING */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 200px; flex-direction: column; gap: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--text2); font-size: 12px; }
+
+  /* RANKING CONTAS */
+  .conta-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .conta-row:last-child { border-bottom: none; }
+  .conta-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; width: 160px; flex-shrink: 0; }
+  .conta-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .conta-bar { height: 100%; border-radius: 4px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+  .conta-val { font-size: 12px; color: var(--accent); width: 100px; text-align: right; flex-shrink: 0; }
+  .conta-qty { font-size: 11px; color: var(--text3); width: 80px; text-align: right; flex-shrink: 0; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
+
+  /* TOOLTIP override */
+  .chartjs-tooltip { font-family: 'DM Mono', monospace !important; font-size: 12px !important; }
+
+  /* Scrollbar global */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .col-span-2, .col-span-3 { grid-column: span 1; }
+    .container { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">DeLuca <span>Enxovais</span></div>
+  <div class="header-right">
+    <span class="last-update"><span class="status-dot"></span>Base de dados ativa</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Data Início</span>
+      <input type="date" id="f-inicio" class="filter-control" value="2025-05-07">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Data Fim</span>
+      <input type="date" id="f-fim" class="filter-control" value="2025-05-13">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Conta</span>
+      <select id="f-conta" class="filter-control">
+        <option value="">Todas as contas</option>
+        <option value="GRECOR">GRECOR</option>
+        <option value="DDV">DDV</option>
+        <option value="BENMIVI">BENMIVI</option>
+        <option value="DANNY_DELUCA_VIC">DANNY / DELUCA / VIC</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Categoria</span>
+      <select id="f-categoria" class="filter-control">
+        <option value="">Todas</option>
+        <option value="Lençóis">Lençóis</option>
+        <option value="Cortinas">Cortinas</option>
+        <option value="Fronhas">Fronhas</option>
+        <option value="Mantas">Mantas</option>
+        <option value="Protetores">Protetores</option>
+        <option value="Outros">Outros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">SKU</span>
+      <input type="text" id="f-sku" class="filter-control" placeholder="ex: LENÇOL_CASAL..." style="width:220px">
+    </div>
+    <button class="btn-apply" onclick="aplicarFiltros()">↻ ATUALIZAR</button>
+    <button class="btn-secondary" onclick="resetarFiltros()">Limpar</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Receita Bruta</div><div class="kpi-value" id="kpi-receita">—</div><div class="kpi-sub" id="kpi-receita-sub">carregando...</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pedidos</div><div class="kpi-value" id="kpi-pedidos">—</div><div class="kpi-sub" id="kpi-pedidos-sub">linhas no período</div></div>
+    <div class="kpi-card"><div class="kpi-label">Unidades Vendidas</div><div class="kpi-value" id="kpi-unidades">—</div><div class="kpi-sub" id="kpi-unidades-sub">total de peças</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="kpi-ticket">—</div><div class="kpi-sub" id="kpi-ticket-sub">por linha de pedido</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('evolucao')">📈 Evolução</button>
+    <button class="tab" onclick="switchTab('abc')">🔬 Curva ABC</button>
+    <button class="tab" onclick="switchTab('contas')">🏪 Por Conta</button>
+    <button class="tab" onclick="switchTab('consumo')">🧵 Consumo MP</button>
+  </div>
+
+  <!-- PAINEL: EVOLUÇÃO -->
+  <div id="panel-evolucao" class="panel active">
+    <div class="grid-2">
+      <div class="card col-span-2">
+        <div class="card-title">Evolução de Vendas</div>
+        <div class="card-subtitle">Receita bruta acumulada por dia</div>
+        <div class="chart-wrap-lg"><canvas id="chart-evolucao"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Mix por Categoria</div>
+        <div class="card-subtitle">% da receita total</div>
+        <div class="chart-wrap"><canvas id="chart-categoria-pizza"></canvas></div>
+      </div>
+      <div class="card col-span-2">
+        <div class="card-title">Receita por Categoria / Dia</div>
+        <div class="card-subtitle">Barras empilhadas</div>
+        <div class="chart-wrap"><canvas id="chart-cat-dia"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL: CURVA ABC -->
+  <div id="panel-abc" class="panel">
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-title">Curva ABC — Visualização</div>
+        <div class="card-subtitle">% acumulado da receita (Pareto)</div>
+        <div class="chart-wrap"><canvas id="chart-abc-pareto"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribuição ABC</div>
+        <div class="card-subtitle">Contagem de SKUs por classe</div>
+        <div class="chart-wrap"><canvas id="chart-abc-dist"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tabela Curva ABC — SKUs</div>
+      <div class="card-subtitle">Metodologia: A=0–80% | B=80–95% | C=95–100% da receita acumulada</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn-secondary" onclick="filtroABC('all')" id="btn-abc-all" style="border-color:var(--accent);color:var(--accent)">Todos</button>
+        <button class="btn-secondary" onclick="filtroABC('A')" id="btn-abc-A">Classe A</button>
+        <button class="btn-secondary" onclick="filtroABC('B')" id="btn-abc-B">Classe B</button>
+        <button class="btn-secondary" onclick="filtroABC('C')" id="btn-abc-C">Classe C</button>
+      </div>
+      <div class="table-wrap">
+        <table class="abc-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Classe</th><th>SKU Correlação</th><th>Categoria</th>
+              <th>Qtd</th><th>Receita</th><th>% Receita</th><th>% Acum.</th><th>Participação</th>
+            </tr>
+          </thead>
+          <tbody id="abc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL: POR CONTA -->
+  <div id="panel-contas" class="panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Ranking por Conta</div>
+        <div class="card-subtitle">Receita bruta no período filtrado</div>
+        <div id="ranking-contas"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribuição por Conta</div>
+        <div class="card-subtitle">% da receita total</div>
+        <div class="chart-wrap"><canvas id="chart-contas-pizza"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Evolução por Conta / Dia</div>
+      <div class="card-subtitle">Linhas por conta ao longo do período</div>
+      <div class="chart-wrap-lg"><canvas id="chart-contas-linha"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PAINEL: CONSUMO MP -->
+  <div id="panel-consumo" class="panel">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Consumo Estimado de Matéria-Prima</div>
+      <div class="card-subtitle">Calculado via estrutura de produto × vendas. SKUs sem estrutura cadastrada são desconsiderados.</div>
+      <div id="mp-cards" class="mp-grid" style="margin-top:16px"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Consumo por MP (metros)</div>
+        <div class="card-subtitle">Tecidos e materiais</div>
+        <div class="chart-wrap"><canvas id="chart-mp-bar"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Custo de MP por Categoria</div>
+        <div class="card-subtitle">Estimativa baseada nos preços cadastrados</div>
+        <div class="chart-wrap"><canvas id="chart-mp-custo"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SUPABASE_URL = 'https://kixgbvytlftgxfwvifgu.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpeGdidnl0bGZ0Z3hmd3ZpZmd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NjgzNDEsImV4cCI6MjA5NDE0NDM0MX0.mnL4nWhSEuVkPMEF7DVlltgKqmQei6wKT11zN865gAA';
+const H = { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` };
+
+// ============================================================
+// ESTADO
+// ============================================================
+let VENDAS = [], ESTRUTURA = {}, MP_PRECOS = {};
+let CHARTS = {};
+let filtroABCAtivo = 'all';
+let abcData = [];
+
+// ============================================================
+// FETCH HELPERS
+// ============================================================
+async function fetchAll(endpoint) {
+  let all = [], offset = 0, limit = 1000;
+  while (true) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}&limit=${limit}&offset=${offset}`, { headers: H });
+    const d = await r.json();
+    if (!d.length) break;
+    all = all.concat(d);
+    if (d.length < limit) break;
+    offset += limit;
+  }
+  return all;
+}
+
+async function fetchSimple(endpoint) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, { headers: H });
+  return r.json();
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+async function init() {
+  showLoading();
+  try {
+    // Carregar tudo em paralelo
+    const [vendas, estrutura, mp] = await Promise.all([
+      fetchAll('vendas?select=data_venda,produto_descricao,sku_correlacao,quantidade,valor_bruto,categoria,conta'),
+      fetchAll('estrutura_produto?select=sku,materia_prima,quantidade,unidade'),
+      fetchSimple('tabela_mp?select=materia_prima,preco_unitario,unidade')
+    ]);
+
+    VENDAS = vendas;
+
+    // Montar mapa de estrutura: sku → [{mp, qty, un}]
+    estrutura.forEach(r => {
+      if (!ESTRUTURA[r.sku]) ESTRUTURA[r.sku] = [];
+      ESTRUTURA[r.sku].push({ mp: r.materia_prima, qty: r.quantidade, un: r.unidade });
+    });
+
+    // Mapa de preços MP
+    mp.forEach(r => { MP_PRECOS[r.materia_prima] = r.preco_unitario; });
+
+    aplicarFiltros();
+  } catch(e) {
+    console.error(e);
+    document.querySelector('.container').innerHTML = `<div class="empty">Erro ao conectar: ${e.message}</div>`;
+  }
+}
+
+function showLoading() {
+  ['kpi-receita','kpi-pedidos','kpi-unidades','kpi-ticket'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+}
+
+// ============================================================
+// FILTROS
+// ============================================================
+function getFiltros() {
+  return {
+    inicio: document.getElementById('f-inicio').value,
+    fim: document.getElementById('f-fim').value,
+    conta: document.getElementById('f-conta').value,
+    categoria: document.getElementById('f-categoria').value,
+    sku: document.getElementById('f-sku').value.trim().toUpperCase()
+  };
+}
+
+function filtrarVendas(vendas, f) {
+  return vendas.filter(v => {
+    if (f.inicio && v.data_venda < f.inicio) return false;
+    if (f.fim && v.data_venda > f.fim) return false;
+    if (f.conta && v.conta !== f.conta) return false;
+    if (f.categoria && v.categoria !== f.categoria) return false;
+    if (f.sku && !(v.sku_correlacao || '').toUpperCase().includes(f.sku)) return false;
+    return true;
+  });
+}
+
+function aplicarFiltros() {
+  const f = getFiltros();
+  const vf = filtrarVendas(VENDAS, f);
+  renderKPIs(vf);
+  renderEvolucao(vf);
+  renderABC(vf);
+  renderContas(vf);
+  renderConsumo(vf);
+}
+
+function resetarFiltros() {
+  document.getElementById('f-inicio').value = '2025-05-07';
+  document.getElementById('f-fim').value = '2025-05-13';
+  document.getElementById('f-conta').value = '';
+  document.getElementById('f-categoria').value = '';
+  document.getElementById('f-sku').value = '';
+  aplicarFiltros();
+}
+
+// ============================================================
+// KPIs
+// ============================================================
+function fmtBRL(v) {
+  return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtN(v) { return v.toLocaleString('pt-BR'); }
+
+function renderKPIs(vendas) {
+  const receita = vendas.reduce((s, v) => s + v.valor_bruto, 0);
+  const unidades = vendas.reduce((s, v) => s + v.quantidade, 0);
+  const ticket = vendas.length ? receita / vendas.length : 0;
+
+  document.getElementById('kpi-receita').textContent = fmtBRL(receita);
+  document.getElementById('kpi-receita-sub').textContent = `${vendas.length} linhas no período`;
+  document.getElementById('kpi-pedidos').textContent = fmtN(vendas.length);
+  document.getElementById('kpi-unidades').textContent = fmtN(unidades);
+  document.getElementById('kpi-unidades-sub').textContent = 'total de peças';
+  document.getElementById('kpi-ticket').textContent = fmtBRL(ticket);
+  document.getElementById('kpi-ticket-sub').textContent = 'por linha de pedido';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ============================================================
+// CHART HELPERS
+// ============================================================
+const PALETTE = ['#e8c547','#5b8af5','#4ecdc4','#f5605b','#a78bfa','#fb923c','#34d399','#f472b6'];
+
+function destroyChart(id) {
+  if (CHARTS[id]) { CHARTS[id].destroy(); delete CHARTS[id]; }
+}
+
+function mkChart(id, config) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  CHARTS[id] = new Chart(ctx, {
+    ...config,
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#8888aa', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#1a1a24', borderColor: '#2a2a38', borderWidth: 1,
+          titleColor: '#f0f0f5', bodyColor: '#8888aa',
+          titleFont: { family: 'Syne', weight: '700' },
+          bodyFont: { family: 'DM Mono', size: 11 },
+          callbacks: {}
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } },
+        y: { ticks: { color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      },
+      ...config.options
+    }
+  });
+}
+
+// ============================================================
+// EVOLUÇÃO
+// ============================================================
+function renderEvolucao(vendas) {
+  // Por dia
+  const porDia = {};
+  const porDiaCat = {};
+  const CATS = ['Lençóis','Cortinas','Fronhas','Mantas','Protetores','Outros'];
+
+  vendas.forEach(v => {
+    porDia[v.data_venda] = (porDia[v.data_venda] || 0) + v.valor_bruto;
+    const cat = v.categoria || 'Outros';
+    if (!porDiaCat[v.data_venda]) porDiaCat[v.data_venda] = {};
+    porDiaCat[v.data_venda][cat] = (porDiaCat[v.data_venda][cat] || 0) + v.valor_bruto;
+  });
+
+  const dias = Object.keys(porDia).sort();
+  const vals = dias.map(d => porDia[d]);
+
+  // Evolução principal
+  mkChart('chart-evolucao', {
+    type: 'bar',
+    data: {
+      labels: dias.map(d => {
+        const [,, dd, mm] = d.match(/(\d{4})-(\d{2})-(\d{2})/) || ['','',d.slice(8),d.slice(5,7)];
+        return `${dd}/${mm}`;
+      }),
+      datasets: [{
+        label: 'Receita Bruta',
+        data: vals,
+        backgroundColor: 'rgba(232,197,71,0.15)',
+        borderColor: '#e8c547',
+        borderWidth: 2,
+        borderRadius: 4,
+        type: 'bar'
+      }, {
+        label: 'Linha de Tendência',
+        data: vals,
+        borderColor: '#5b8af5',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: '#5b8af5',
+        tension: 0.4,
+        type: 'line',
+        fill: false,
+        yAxisID: 'y'
+      }]
+    },
+    options: {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${fmtBRL(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        y: { ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+
+  // Pizza categorias
+  const porCat = {};
+  vendas.forEach(v => { porCat[v.categoria || 'Outros'] = (porCat[v.categoria || 'Outros'] || 0) + v.valor_bruto; });
+  const catLabels = Object.keys(porCat).sort((a,b) => porCat[b]-porCat[a]);
+  const catVals = catLabels.map(c => porCat[c]);
+
+  mkChart('chart-categoria-pizza', {
+    type: 'doughnut',
+    data: {
+      labels: catLabels,
+      datasets: [{ data: catVals, backgroundColor: PALETTE.slice(0, catLabels.length), borderColor: '#0a0a0f', borderWidth: 2, hoverOffset: 6 }]
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmtBRL(ctx.parsed)}` } },
+        legend: { position: 'bottom' }
+      },
+      scales: { x: { display: false }, y: { display: false } }
+    }
+  });
+
+  // Barras empilhadas por cat/dia
+  const catsPresentes = [...new Set(vendas.map(v => v.categoria || 'Outros'))];
+  mkChart('chart-cat-dia', {
+    type: 'bar',
+    data: {
+      labels: dias.map(d => { const p = d.split('-'); return `${p[2]}/${p[1]}`; }),
+      datasets: catsPresentes.map((cat, i) => ({
+        label: cat,
+        data: dias.map(d => (porDiaCat[d] || {})[cat] || 0),
+        backgroundColor: PALETTE[i % PALETTE.length],
+        borderRadius: 2
+      }))
+    },
+    options: {
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.parsed.y)}` } } },
+      scales: {
+        x: { stacked: true, ticks: { color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } },
+        y: { stacked: true, ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// CURVA ABC
+// ============================================================
+function renderABC(vendas) {
+  // Agregar por sku_correlacao
+  const porSKU = {};
+  vendas.forEach(v => {
+    const sku = v.sku_correlacao || v.produto_descricao;
+    if (!porSKU[sku]) porSKU[sku] = { sku, cat: v.categoria || 'Outros', receita: 0, qtd: 0 };
+    porSKU[sku].receita += v.valor_bruto;
+    porSKU[sku].qtd += v.quantidade;
+  });
+
+  const sorted = Object.values(porSKU).sort((a,b) => b.receita - a.receita);
+  const total = sorted.reduce((s, r) => s + r.receita, 0);
+
+  let acum = 0;
+  abcData = sorted.map((r, i) => {
+    acum += r.receita;
+    const pct = total ? (r.receita / total * 100) : 0;
+    const pctAcum = total ? (acum / total * 100) : 0;
+    const classe = pctAcum <= 80 ? 'A' : pctAcum <= 95 ? 'B' : 'C';
+    return { rank: i+1, ...r, pct, pctAcum, classe };
+  });
+
+  renderABCTabela(filtroABCAtivo);
+
+  // Pareto chart
+  mkChart('chart-abc-pareto', {
+    type: 'bar',
+    data: {
+      labels: abcData.slice(0, 40).map(r => r.sku.length > 20 ? r.sku.slice(0,20)+'…' : r.sku),
+      datasets: [{
+        label: 'Receita',
+        data: abcData.slice(0, 40).map(r => r.receita),
+        backgroundColor: abcData.slice(0, 40).map(r => r.classe === 'A' ? 'rgba(78,205,196,.7)' : r.classe === 'B' ? 'rgba(232,197,71,.7)' : 'rgba(245,96,91,.5)'),
+        borderRadius: 3,
+        yAxisID: 'y'
+      }, {
+        label: '% Acumulado',
+        data: abcData.slice(0, 40).map(r => r.pctAcum),
+        borderColor: '#5b8af5',
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0.2,
+        type: 'line',
+        fill: false,
+        yAxisID: 'y2'
+      }]
+    },
+    options: {
+      plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label === 'Receita' ? ` ${fmtBRL(ctx.parsed.y)}` : ` ${ctx.parsed.y.toFixed(1)}%` } } },
+      scales: {
+        x: { ticks: { display: false }, grid: { color: '#1e1e2a' } },
+        y: { position: 'left', ticks: { callback: v => 'R$' + (v/1000).toFixed(0)+'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } },
+        y2: { position: 'right', min: 0, max: 100, ticks: { callback: v => v+'%', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Dist ABC
+  const cntA = abcData.filter(r => r.classe === 'A').length;
+  const cntB = abcData.filter(r => r.classe === 'B').length;
+  const cntC = abcData.filter(r => r.classe === 'C').length;
+  const recA = abcData.filter(r => r.classe === 'A').reduce((s,r) => s+r.receita,0);
+  const recB = abcData.filter(r => r.classe === 'B').reduce((s,r) => s+r.receita,0);
+  const recC = abcData.filter(r => r.classe === 'C').reduce((s,r) => s+r.receita,0);
+
+  mkChart('chart-abc-dist', {
+    type: 'bar',
+    data: {
+      labels: [`A — ${cntA} SKUs`, `B — ${cntB} SKUs`, `C — ${cntC} SKUs`],
+      datasets: [{
+        label: 'Receita (R$)',
+        data: [recA, recB, recC],
+        backgroundColor: ['rgba(78,205,196,.7)', 'rgba(232,197,71,.7)', 'rgba(245,96,91,.5)'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${fmtBRL(ctx.parsed.y)}` } }, legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => 'R$'+(v/1000).toFixed(0)+'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+}
+
+function filtroABC(classe) {
+  filtroABCAtivo = classe;
+  ['all','A','B','C'].forEach(c => {
+    const btn = document.getElementById('btn-abc-' + c);
+    if (btn) {
+      btn.style.borderColor = c === classe ? 'var(--accent)' : '';
+      btn.style.color = c === classe ? 'var(--accent)' : '';
+    }
+  });
+  renderABCTabela(classe);
+}
+
+function renderABCTabela(classe) {
+  const dados = classe === 'all' ? abcData : abcData.filter(r => r.classe === classe);
+  const tbody = document.getElementById('abc-tbody');
+  tbody.innerHTML = dados.map(r => `
+    <tr>
+      <td style="color:var(--text3)">${r.rank}</td>
+      <td><span class="abc-badge abc-${r.classe}">${r.classe}</span></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">${r.sku}</td>
+      <td style="color:var(--text2)">${r.cat}</td>
+      <td>${fmtN(r.qtd)}</td>
+      <td style="color:var(--accent)">${fmtBRL(r.receita)}</td>
+      <td>${r.pct.toFixed(2)}%</td>
+      <td>${r.pctAcum.toFixed(2)}%</td>
+      <td>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${Math.min(r.pct*5,100)}%;background:${r.classe==='A'?'var(--A)':r.classe==='B'?'var(--B)':'var(--C)'}"></div>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// POR CONTA
+// ============================================================
+function renderContas(vendas) {
+  const porConta = {};
+  vendas.forEach(v => {
+    const c = v.conta || 'SEM CONTA';
+    if (!porConta[c]) porConta[c] = { receita: 0, qtd: 0 };
+    porConta[c].receita += v.valor_bruto;
+    porConta[c].qtd += v.quantidade;
+  });
+
+  const sorted = Object.entries(porConta).sort((a,b) => b[1].receita - a[1].receita);
+  const maxRec = sorted[0]?.[1].receita || 1;
+  const total = sorted.reduce((s,[,v]) => s + v.receita, 0);
+
+  const CONTA_COLORS = { 'BENMIVI': '#e8c547', 'GRECOR': '#4ecdc4', 'DDV': '#5b8af5', 'DANNY_DELUCA_VIC': '#f5605b', 'SEM CONTA': '#555570' };
+
+  document.getElementById('ranking-contas').innerHTML = sorted.map(([nome, v], i) => `
+    <div class="conta-row">
+      <div class="conta-name" style="color:${CONTA_COLORS[nome]||PALETTE[i]}">${nome}</div>
+      <div class="conta-bar-wrap">
+        <div class="conta-bar" style="width:${v.receita/maxRec*100}%;background:${CONTA_COLORS[nome]||PALETTE[i]}"></div>
+      </div>
+      <div class="conta-val">${fmtBRL(v.receita)}</div>
+      <div class="conta-qty">${fmtN(v.qtd)} un</div>
+    </div>
+  `).join('');
+
+  // Pizza
+  mkChart('chart-contas-pizza', {
+    type: 'doughnut',
+    data: {
+      labels: sorted.map(([c]) => c),
+      datasets: [{
+        data: sorted.map(([,v]) => v.receita),
+        backgroundColor: sorted.map(([c]) => CONTA_COLORS[c] || '#555570'),
+        borderColor: '#0a0a0f', borderWidth: 2, hoverOffset: 6
+      }]
+    },
+    options: {
+      plugins: {
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmtBRL(ctx.parsed)} (${(ctx.parsed/total*100).toFixed(1)}%)` } },
+        legend: { position: 'bottom' }
+      },
+      scales: { x: { display: false }, y: { display: false } }
+    }
+  });
+
+  // Linha por conta/dia
+  const dias = [...new Set(vendas.map(v => v.data_venda))].sort();
+  const contas = Object.keys(porConta);
+  const porContaDia = {};
+  vendas.forEach(v => {
+    const c = v.conta || 'SEM CONTA';
+    if (!porContaDia[c]) porContaDia[c] = {};
+    porContaDia[c][v.data_venda] = (porContaDia[c][v.data_venda] || 0) + v.valor_bruto;
+  });
+
+  mkChart('chart-contas-linha', {
+    type: 'line',
+    data: {
+      labels: dias.map(d => { const p=d.split('-'); return `${p[2]}/${p[1]}`; }),
+      datasets: contas.map((c, i) => ({
+        label: c,
+        data: dias.map(d => (porContaDia[c] || {})[d] || 0),
+        borderColor: CONTA_COLORS[c] || PALETTE[i],
+        backgroundColor: (CONTA_COLORS[c] || PALETTE[i]) + '20',
+        borderWidth: 2,
+        pointRadius: 4,
+        tension: 0.3,
+        fill: false
+      }))
+    },
+    options: {
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.parsed.y)}` } } },
+      scales: {
+        y: { ticks: { callback: v => 'R$'+(v/1000).toFixed(0)+'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// CONSUMO MP
+// ============================================================
+function renderConsumo(vendas) {
+  // Agregar vendas por sku_correlacao
+  const porSKU = {};
+  vendas.forEach(v => {
+    const sku = v.sku_correlacao;
+    if (!sku || sku === 'OUTROS FORNECEDORES') return;
+    if (!porSKU[sku]) porSKU[sku] = { qtd: 0, cat: v.categoria || 'Outros' };
+    porSKU[sku].qtd += v.quantidade;
+  });
+
+  // Calcular consumo de cada MP
+  const consumo = {}; // mp → metros totais
+  let semEstrutura = 0;
+  Object.entries(porSKU).forEach(([sku, { qtd }]) => {
+    const estrut = ESTRUTURA[sku];
+    if (!estrut) { semEstrutura++; return; }
+    estrut.forEach(({ mp, qty, un }) => {
+      if (mp === 'EMBALAGEM') {
+        consumo['EMBALAGEM'] = (consumo['EMBALAGEM'] || 0) + qty * qtd;
+      } else {
+        consumo[mp] = (consumo[mp] || 0) + qty * qtd;
+      }
+    });
+  });
+
+  // Calcular custo MP por categoria
+  const custoCat = {};
+  Object.entries(porSKU).forEach(([sku, { qtd, cat }]) => {
+    const estrut = ESTRUTURA[sku];
+    if (!estrut) return;
+    let custoTotal = 0;
+    estrut.forEach(({ mp, qty }) => {
+      custoTotal += qty * qtd * (MP_PRECOS[mp] || 0);
+    });
+    custoCat[cat] = (custoCat[cat] || 0) + custoTotal;
+  });
+
+  // Cards de MP
+  const mpsOrdenados = Object.entries(consumo)
+    .filter(([mp]) => mp !== 'EMBALAGEM')
+    .sort((a,b) => b[1]-a[1]);
+
+  const embQty = consumo['EMBALAGEM'] || 0;
+
+  document.getElementById('mp-cards').innerHTML = [
+    ...mpsOrdenados.map(([mp, qty]) => `
+      <div class="mp-card">
+        <div class="mp-name">${mp}</div>
+        <div class="mp-qty">${qty.toFixed(1)}<span class="mp-unit"> m</span></div>
+        <div class="mp-custo">${fmtBRL(qty * (MP_PRECOS[mp] || 0))}</div>
+      </div>
+    `),
+    `<div class="mp-card">
+      <div class="mp-name">EMBALAGEM</div>
+      <div class="mp-qty">${Math.round(embQty).toLocaleString('pt-BR')}<span class="mp-unit"> un</span></div>
+      <div class="mp-custo">${fmtBRL(embQty * (MP_PRECOS['EMBALAGEM'] || 0))}</div>
+    </div>`
+  ].join('');
+
+  // Bar chart consumo
+  mkChart('chart-mp-bar', {
+    type: 'bar',
+    data: {
+      labels: mpsOrdenados.map(([mp]) => mp.replace('MICRO ', '')),
+      datasets: [{
+        label: 'Metros',
+        data: mpsOrdenados.map(([,v]) => v),
+        backgroundColor: mpsOrdenados.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(1)} m` } }, legend: { display: false } },
+      scales: {
+        x: { ticks: { callback: v => v+'m', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } },
+        y: { ticks: { color: '#8888aa', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+
+  // Bar chart custo por categoria
+  const catsSorted = Object.entries(custoCat).sort((a,b) => b[1]-a[1]);
+  mkChart('chart-mp-custo', {
+    type: 'bar',
+    data: {
+      labels: catsSorted.map(([c]) => c),
+      datasets: [{
+        label: 'Custo MP estimado',
+        data: catsSorted.map(([,v]) => v),
+        backgroundColor: catsSorted.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${fmtBRL(ctx.parsed.y)}` } }, legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => 'R$'+(v/1000).toFixed(0)+'k', color: '#555570', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#1e1e2a' } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
