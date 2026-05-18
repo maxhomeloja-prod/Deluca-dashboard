@@ -121,6 +121,14 @@
     .filters{flex-direction:column;gap:8px;padding:12px;width:100%;box-sizing:border-box;}
     .filter-group{width:100%;}
     .filter-control{width:100%;box-sizing:border-box;font-size:14px;padding:8px 10px;min-width:0;max-width:100%;}
+    /* iOS ignora max-width em input[type=date] — overflow:hidden no wrapper corta o excesso */
+    .filter-group{overflow:hidden;}
+    input[type="date"].filter-control{
+      display:block;
+      width:100%;
+      -webkit-appearance:none;
+      appearance:none;
+    }
     .btn-apply,.btn-secondary{width:100%;box-sizing:border-box;}
 
     /* KPIs: 2 colunas */
@@ -135,7 +143,9 @@
     .tab{white-space:nowrap;flex-shrink:0;padding:9px 12px;font-size:11px;}
 
     /* Cards e gráficos */
-    .card{padding:14px;}
+    .card{padding:14px;overflow:hidden;min-width:0;}
+    /* Verba: garantir que card pai não expanda além da tela */
+    #panel-verba .card{max-width:calc(100vw - 20px);overflow:hidden;}
     .chart-wrap{height:200px;}
     .chart-wrap-lg{height:230px;}
 
