@@ -104,9 +104,71 @@
     .col-span-2{grid-column:span 1;}
     .container{padding:16px;}
   }
+
+  /* LOGIN */
+  .login-overlay {
+    position:fixed;inset:0;background:var(--bg);z-index:9999;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .login-box {
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:48px 40px;width:100%;max-width:380px;
+    box-shadow:0 24px 80px rgba(0,0,0,.6);
+  }
+  .login-logo {
+    font-family:'Syne',sans-serif;font-weight:800;font-size:22px;
+    letter-spacing:-.5px;text-align:center;margin-bottom:6px;
+  }
+  .login-logo span{color:var(--accent);}
+  .login-tagline{font-size:11px;color:var(--text3);text-align:center;margin-bottom:36px;letter-spacing:.5px;text-transform:uppercase;}
+  .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  .login-field label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);}
+  .login-field input{
+    background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:10px 14px;border-radius:var(--radius-sm);
+    font-family:'DM Mono',monospace;font-size:13px;outline:none;
+    transition:border-color .2s;
+  }
+  .login-field input:focus{border-color:var(--accent);}
+  .login-btn{
+    width:100%;padding:11px;background:var(--accent);color:#000;border:none;
+    border-radius:var(--radius-sm);font-family:'Syne',sans-serif;font-weight:700;
+    font-size:13px;cursor:pointer;letter-spacing:.5px;margin-top:8px;
+    transition:opacity .2s,transform .1s;
+  }
+  .login-btn:hover{opacity:.85;}
+  .login-btn:active{transform:scale(.98);}
+  .login-error{
+    font-size:11px;color:var(--accent3);text-align:center;
+    margin-top:10px;min-height:16px;
+  }
+  .login-decor{
+    width:48px;height:3px;background:var(--accent);border-radius:2px;
+    margin:0 auto 28px;
+  }
+
 </style>
 </head>
 <body>
+
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">DeLuca <span>Enxovais</span></div>
+    <div class="login-tagline">Painel de Análise de Vendas</div>
+    <div class="login-decor"></div>
+    <div class="login-field">
+      <label>Usuário</label>
+      <input type="text" id="login-user" placeholder="Digite o usuário" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="tentarLogin()">ENTRAR</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 
 <header class="header">
   <div class="logo">DeLuca <span>Enxovais</span></div>
@@ -609,6 +671,26 @@ function renderVerba(vendas,f){
   mk('chart-mp-grupo',{type:'doughnut',data:{labels:gL,datasets:[{data:gL.map(g=>gp[g]),backgroundColor:PAL.slice(0,gL.length),borderColor:'#0a0a0f',borderWidth:2,hoverOffset:4}]},
     options:{plugins:{tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fBRL(ctx.parsed)}`}},legend:{position:'bottom',labels:{color:'#8888aa',font:{family:'DM Mono',size:10},boxWidth:10}}},scales:{x:{display:false},y:{display:false}}}});
 }
+
+
+function tentarLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(u==='Administrador'&&p==='murilo456'){
+    document.getElementById('login-overlay').style.display='none';
+  } else {
+    const err=document.getElementById('login-error');
+    err.textContent='Usuário ou senha incorretos.';
+    document.getElementById('login-pass').value='';
+    setTimeout(()=>{err.textContent='';},3000);
+  }
+}
+// Enter nos campos dispara login
+document.addEventListener('DOMContentLoaded',()=>{
+  ['login-user','login-pass'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')tentarLogin();});
+  });
+});
 
 init();
 </script>
