@@ -258,18 +258,34 @@
       <div class="card">
         <div class="card-title">Verba Estimada — Matéria-Prima</div>
         <div class="card-subtitle">Estrutura de produto × vendas do período · <span class="col-proj">Projeção até <span id="verba-proj-label">—</span></span></div>
-        <div class="table-wrap" style="max-height:400px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#555570;margin-bottom:6px">Tecidos</div>
+        <div class="table-wrap" style="max-height:320px;margin-bottom:20px">
           <table class="verba-table">
             <thead>
               <tr>
                 <th>Matéria-Prima</th>
-                <th class="num">Consumo</th>
+                <th class="num">Consumo (m)</th>
                 <th class="num">Verba Acum.</th>
                 <th class="num col-proj">Projeção até data</th>
               </tr>
             </thead>
             <tbody id="verba-mp-tbody"></tbody>
             <tfoot id="verba-mp-tfoot"></tfoot>
+          </table>
+        </div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#555570;margin-bottom:6px">Embalagem</div>
+        <div class="table-wrap" style="margin-bottom:20px">
+          <table class="verba-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th class="num">Consumo (un)</th>
+                <th class="num">Verba Acum.</th>
+                <th class="num col-proj">Projeção até data</th>
+              </tr>
+            </thead>
+            <tbody id="verba-emb-tbody"></tbody>
+            <tfoot id="verba-emb-tfoot"></tfoot>
           </table>
         </div>
         <div style="margin-top:20px">
@@ -433,13 +449,25 @@ function renderEvolucao(vendas){
   const dias=[...new Set(vendas.map(v=>v.data_venda))].sort();
   const dIdx={};dias.forEach((d,i)=>dIdx[d]=i);
   const cats=[...new Set(vendas.map(v=>v.categoria||'Outros'))];
-  mk('chart-cat-scatter',{type:'scatter',data:{datasets:cats.map((cat,i)=>({
-    label:cat,
-    data:dias.filter(d=>pdc[d]&&pdc[d][cat]).map(d=>({x:dIdx[d],y:pdc[d][cat]})),
-    backgroundColor:PAL[i%PAL.length]+'cc',borderColor:PAL[i%PAL.length],pointRadius:8,pointHoverRadius:11
-  }))},options:{plugins:{tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fBRL(ctx.parsed.y)}`}}},
-    scales:{x:{ticks:{callback:v=>{const d=dias[v];return d?d.split('-').slice(1).reverse().join('/'):v;},color:'#555570',font:{family:'DM Mono',size:10}},grid:{color:'#1e1e2a'}},
-      y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',color:'#555570',font:{family:'DM Mono',size:10}},grid:{color:'#1e1e2a'}}}}});
+  mk('chart-cat-scatter',{type:'line',data:{labels:dias.map(d=>d.split('-').slice(1).reverse().join('/')),
+    datasets:cats.map((cat,i)=>({
+      label:cat,
+      data:dias.map(d=>pdc[d]&&pdc[d][cat]?pdc[d][cat]:null),
+      borderColor:PAL[i%PAL.length],
+      backgroundColor:PAL[i%PAL.length]+'22',
+      borderWidth:2,
+      pointRadius:5,
+      pointHoverRadius:8,
+      pointBackgroundColor:PAL[i%PAL.length],
+      tension:0.4,
+      fill:false,
+      spanGaps:false
+    }))},
+    options:{plugins:{tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fBRL(ctx.parsed.y)}`}}},
+      scales:{
+        x:{ticks:{color:'#555570',font:{family:'DM Mono',size:10}},grid:{color:'#1e1e2a'}},
+        y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',color:'#555570',font:{family:'DM Mono',size:10}},grid:{color:'#1e1e2a'}}
+      }}});
 }
 
 function renderABC(vendas){
@@ -539,16 +567,25 @@ function renderVerba(vendas,f){
   const cFis2={};
   Object.entries(pSKU).forEach(([sku,qtd])=>{const est=E[sku];if(est)est.forEach(({mp,qty,un})=>{if(!cFis2[mp])cFis2[mp]={qty:0,un};cFis2[mp].qty+=qty*qtd;cFis2[mp].un=un;});});
 
-  document.getElementById('verba-mp-tbody').innerHTML=[
-    ...mps.map(([mp,custo])=>`<tr>
+  // Tabela Tecidos
+  const totalMetros=mps.reduce((s,[mp])=>s+(cFis2[mp]?.qty||0),0);
+  const totalTecidoCusto=mps.reduce((s,[,c])=>s+c,0);
+  document.getElementById('verba-mp-tbody').innerHTML=mps.map(([mp,custo])=>`<tr>
       <td>${mp}</td>
-      <td class="num">${(cFis2[mp]?.qty||0).toFixed(1)} ${cFis2[mp]?.un||'m'}</td>
+      <td class="num">${(cFis2[mp]?.qty||0).toFixed(1)}</td>
       <td class="num">${fBRL(custo)}</td>
       <td class="num col-proj">${fBRL(custo*mult)}</td>
-    </tr>`),
-    `<tr><td>EMBALAGEM</td><td class="num">${Math.round(cFis2['EMBALAGEM']?.qty||0).toLocaleString('pt-BR')} un</td><td class="num">${fBRL(embC)}</td><td class="num col-proj">${fBRL(embC*mult)}</td></tr>`
-  ].join('');
-  document.getElementById('verba-mp-tfoot').innerHTML=`<tr class="subtotal"><td>SUBTOTAL MP</td><td class="num">—</td><td class="num">${fBRL(totalMP)}</td><td class="num col-proj">${fBRL(totalMP*mult)}</td></tr>`;
+    </tr>`).join('');
+  document.getElementById('verba-mp-tfoot').innerHTML=`<tr class="subtotal"><td>SUBTOTAL TECIDOS</td><td class="num">${totalMetros.toFixed(1)} m</td><td class="num">${fBRL(totalTecidoCusto)}</td><td class="num col-proj">${fBRL(totalTecidoCusto*mult)}</td></tr>`;
+  // Tabela Embalagem
+  const embQty=cFis2['EMBALAGEM']?.qty||0;
+  document.getElementById('verba-emb-tbody').innerHTML=`<tr>
+    <td>EMBALAGEM</td>
+    <td class="num">${Math.round(embQty).toLocaleString('pt-BR')}</td>
+    <td class="num">${fBRL(embC)}</td>
+    <td class="num col-proj">${fBRL(embC*mult)}</td>
+  </tr>`;
+  document.getElementById('verba-emb-tfoot').innerHTML=`<tr class="subtotal"><td>SUBTOTAL EMBALAGEM</td><td class="num">${Math.round(embQty).toLocaleString('pt-BR')} un</td><td class="num">${fBRL(embC)}</td><td class="num col-proj">${fBRL(embC*mult)}</td></tr>`;
 
   document.getElementById('mo-total').textContent=fBRL(moTotal);
   document.getElementById('mo-rate').textContent=`${fBRL(moTotal/diasP)} / dia`;
