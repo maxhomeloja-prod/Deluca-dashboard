@@ -105,54 +105,60 @@
     .container{padding:16px;}
   }
 
-  /* MOBILE */
-  @media(max-width:640px){
-    /* Base: garantir que nada vaze da tela */
-    *{max-width:100%;}
-    .container{padding:10px;}
-    .header{padding:12px 16px;}
+  /* ── MOBILE ONLY (não afeta desktop) ─────────────────────── */
+  @media(max-width:480px){
 
-    /* Filtros: empilhar, sem largura forçada */
-    .filters{flex-direction:column;gap:8px;padding:12px;}
+    /* Impede overflow horizontal global */
+    html,body{overflow-x:hidden;}
+    .container{padding:10px;width:100%;box-sizing:border-box;}
+
+    /* Header: logo e status em linha sem quebra */
+    .header{padding:12px 14px;}
+    .logo{font-size:15px;white-space:nowrap;}
+    .last-update{font-size:10px;white-space:nowrap;}
+
+    /* Filtros: coluna única, campos 100% */
+    .filters{flex-direction:column;gap:8px;padding:12px;width:100%;box-sizing:border-box;}
     .filter-group{width:100%;}
-    .filter-control{width:100%;box-sizing:border-box;}
+    .filter-control{width:100%;box-sizing:border-box;font-size:14px;padding:8px 10px;min-width:0;max-width:100%;}
     .btn-apply,.btn-secondary{width:100%;box-sizing:border-box;}
 
-    /* KPIs: 2 colunas compactas */
-    .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-    .kpi-value{font-size:18px;}
-    .kpi-card{padding:12px 14px;}
+    /* KPIs: 2 colunas */
+    .kpi-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+    .kpi-value{font-size:17px;}
+    .kpi-card{padding:12px;}
     .kpi-sub{font-size:10px;}
 
     /* Tabs: scroll horizontal sem quebra */
     .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
     .tabs::-webkit-scrollbar{display:none;}
-    .tab{white-space:nowrap;flex-shrink:0;padding:9px 13px;font-size:12px;}
+    .tab{white-space:nowrap;flex-shrink:0;padding:9px 12px;font-size:11px;}
 
-    /* Tabelas: o wrapper faz scroll horizontal, tabela tem largura mínima suficiente */
-    .table-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
-    .abc-table{min-width:500px;width:max-content;}
-    .verba-table{min-width:400px;width:max-content;}
-    .abc-table td,.abc-table th{padding:6px 8px;font-size:11px;}
-    .verba-table td,.verba-table th{padding:6px 8px;font-size:11px;}
+    /* Cards e gráficos */
+    .card{padding:14px;}
+    .chart-wrap{height:200px;}
+    .chart-wrap-lg{height:230px;}
+
+    /* Tabelas: wrapper com scroll horizontal */
+    .table-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;max-width:calc(100vw - 20px);}
+    .abc-table{width:max-content;min-width:480px;}
+    .verba-table{width:max-content;min-width:360px;}
+    .abc-table td,.abc-table th{padding:6px 8px;font-size:10px;white-space:nowrap;}
+    .verba-table td,.verba-table th{padding:6px 8px;font-size:10px;white-space:nowrap;}
     .abc-table th:last-child,.abc-table td:last-child{display:none;}
 
-    /* Por Conta: compactar sem quebrar */
+    /* Por Conta */
     .conta-row{gap:8px;}
-    .conta-name{width:90px;font-size:11px;}
-    .conta-val{font-size:11px;width:80px;}
+    .conta-name{width:95px;font-size:11px;}
+    .conta-val{font-size:11px;width:85px;}
     .conta-qty{display:none;}
 
-    /* Verba: coluna lateral de MO vai para baixo */
-    .verba-grid{grid-template-columns:1fr;gap:16px;}
-
-    /* Gráficos menores */
-    .chart-wrap{height:200px;}
-    .chart-wrap-lg{height:240px;}
+    /* Verba: empilhar */
+    .verba-grid{grid-template-columns:1fr;gap:14px;}
 
     /* Login */
-    .login-box{padding:28px 20px;margin:12px;}
-    .login-logo{font-size:18px;}
+    .login-box{padding:28px 18px;margin:10px;}
+    .login-logo{font-size:17px;}
   }
 
   /* LOGIN */
