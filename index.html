@@ -2333,6 +2333,10 @@ function renderOPs() {
       if (o.responsavel === 'PRODUCAO INTERNA') return false;
     }
     if (sitFilt && o.situacao !== sitFilt) return false;
+    if (!sitFilt && o.situacao === 'Finalizado') {
+      const showFin = isMaxOpsView ? document.getElementById('maxops-show-finalizadas')?.checked : document.getElementById('cmo-show-finalizadas')?.checked;
+      if (!showFin) return false;
+    }
     if (respFilt && o.responsavel !== respFilt) return false;
     if (busca && !o.produto.toLowerCase().includes(busca) && !o.sku.toLowerCase().includes(busca)) return false;
     return true;
