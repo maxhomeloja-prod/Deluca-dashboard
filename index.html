@@ -897,8 +897,8 @@
     <button class="nav-btn" onclick="showView('registrar')">✏️ Entregas</button>
     <button class="nav-btn" id="nav-maxentregas" onclick="showView('maxentregas')" style="display:none">📦 Max Entregas</button>
     <button class="nav-btn" id="nav-pagamentos" onclick="showView('pagamentos')" style="display:none">💰 Pagamentos</button>
-    <button class="nav-btn" id="nav-categorizacao" onclick="showView('categorizacao')" style="display:none">🏷️ Categorização <span id="badge-pendentes" style="display:none;background:var(--red);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px"></span></button>
-    <button class="nav-btn" id="nav-balancete" onclick="showView('balancete')" style="display:none">📊 Balancete</button>
+    <button class="nav-btn" id="nav-categorizacao" onclick="showView('categorizacao', this)" style="display:none">🏷️ Categorização <span id="badge-pendentes" style="display:none;background:var(--red);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px"></span></button>
+    <button class="nav-btn" id="nav-balancete" onclick="showView('balancete', this)" style="display:none">📊 Balancete</button>
     <button class="nav-btn" onclick="refreshOPs()" title="Atualizar" style="padding:8px 10px">🔄</button>
     <div id="header-user" style="display:none;align-items:center;gap:8px;margin-left:8px">
       <div class="header-avatar" id="header-avatar">?</div>
@@ -2083,11 +2083,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── NAVIGATION ───────────────────────────────────────────────────
-function showView(v) {
+function showView(v, btn) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  event.target.classList.add('active');
+  document.getElementById('view-' + v)?.classList.add('active');
+  const activeBtn = btn || document.getElementById('nav-' + v);
+  if (activeBtn) activeBtn.classList.add('active');
   if (v === 'pagamentos') loadPagamentos();
   if (v === 'dashboard') { if (allOPs.length) loadDashboard(); else loadOPs().then(() => loadDashboard()); }
   if (v === 'ops') { renderOPs(); }
