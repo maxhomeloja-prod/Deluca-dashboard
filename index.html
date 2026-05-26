@@ -264,6 +264,7 @@
         <option value="DDV">DDV</option>
         <option value="BENMIVI">BENMIVI</option>
         <option value="DANNY_DELUCA_VIC">DANNY / DELUCA / VIC</option>
+        <option value="SHOPEE">SHOPEE</option>
       </select>
     </div>
     <div class="filter-group">
@@ -487,7 +488,7 @@ async function init(){
 const fBRL=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fN=v=>v.toLocaleString('pt-BR');
 const PAL=['#e8c547','#5b8af5','#4ecdc4','#f5605b','#a78bfa','#fb923c','#34d399','#f472b6'];
-const CC={BENMIVI:'#e8c547',GRECOR:'#4ecdc4',DDV:'#5b8af5',DANNY_DELUCA_VIC:'#f5605b'};
+const CC={BENMIVI:'#e8c547',GRECOR:'#4ecdc4',DDV:'#5b8af5',DANNY_DELUCA_VIC:'#f5605b',SHOPEE:'#fb923c'};
 
 function dc(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
 function bo(extra={}){
